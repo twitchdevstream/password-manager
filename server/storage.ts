@@ -1,100 +1,97 @@
 import { User, InsertUser, Password, InsertPassword } from "@shared/schema";
 import session from "express-session";
-import createMemoryStore from "memorystore";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import { db } from "./db";
+import { eq, sql } from "drizzle-orm";
+import { users, passwords } from "@shared/schema";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
-const MemoryStore = createMemoryStore(session);
-const scryptAsync = promisify(scrypt);
+const PostgresSessionStore = connectPg(session);
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
-  getPasswords(userId: number): Promise<Password[]>;
+
+  getPasswords(userId: number, page: number, limit: number): Promise<{passwords: Password[], total: number}>;
   getPassword(id: number): Promise<Password | undefined>;
   createPassword(userId: number, password: InsertPassword): Promise<Password>;
   updatePassword(id: number, password: Partial<InsertPassword>): Promise<Password>;
   deletePassword(id: number): Promise<void>;
-  
+
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private passwords: Map<number, Password>;
-  private currentUserId: number;
-  private currentPasswordId: number;
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.passwords = new Map();
-    this.currentUserId = 1;
-    this.currentPasswordId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async getPasswords(userId: number): Promise<Password[]> {
-    return Array.from(this.passwords.values()).filter(
-      (pwd) => pwd.userId === userId,
-    );
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
+  }
+
+  async getPasswords(userId: number, page: number = 1, limit: number = 10): Promise<{passwords: Password[], total: number}> {
+    const offset = (page - 1) * limit;
+
+    const results = await db.select().from(passwords)
+      .where(eq(passwords.userId, userId))
+      .limit(limit)
+      .offset(offset);
+
+    const [{ count }] = await db.select({
+      count: sql`count(*)::int`,
+    })
+    .from(passwords)
+    .where(eq(passwords.userId, userId));
+
+    return {
+      passwords: results,
+      total: count,
+    };
   }
 
   async getPassword(id: number): Promise<Password | undefined> {
-    return this.passwords.get(id);
+    const [password] = await db.select().from(passwords).where(eq(passwords.id, id));
+    return password;
   }
 
   async createPassword(userId: number, insertPassword: InsertPassword): Promise<Password> {
-    const id = this.currentPasswordId++;
-    const password: Password = {
-      ...insertPassword,
-      id,
-      userId,
-      updatedAt: new Date(),
-    };
-    this.passwords.set(id, password);
+    const [password] = await db
+      .insert(passwords)
+      .values({ ...insertPassword, userId })
+      .returning();
     return password;
   }
 
   async updatePassword(id: number, updateData: Partial<InsertPassword>): Promise<Password> {
-    const existing = this.passwords.get(id);
-    if (!existing) {
-      throw new Error("Password entry not found");
-    }
-    
-    const updated: Password = {
-      ...existing,
-      ...updateData,
-      updatedAt: new Date(),
-    };
-    this.passwords.set(id, updated);
-    return updated;
+    const [password] = await db
+      .update(passwords)
+      .set({ ...updateData, updatedAt: new Date() })
+      .where(eq(passwords.id, id))
+      .returning();
+    return password;
   }
 
   async deletePassword(id: number): Promise<void> {
-    this.passwords.delete(id);
+    await db.delete(passwords).where(eq(passwords.id, id));
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

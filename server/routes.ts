@@ -10,13 +10,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Password management routes
   app.get("/api/passwords", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const passwords = await storage.getPasswords(req.user.id);
-    res.json(passwords);
+
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const result = await storage.getPasswords(req.user.id, page, limit);
+    res.json(result);
   });
 
   app.post("/api/passwords", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     const parseResult = insertPasswordSchema.safeParse(req.body);
     if (!parseResult.success) {
       return res.status(400).json(parseResult.error);
@@ -28,7 +32,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/passwords/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     const id = parseInt(req.params.id);
     const existing = await storage.getPassword(id);
     if (!existing || existing.userId !== req.user.id) {
@@ -46,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/passwords/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+
     const id = parseInt(req.params.id);
     const existing = await storage.getPassword(id);
     if (!existing || existing.userId !== req.user.id) {
