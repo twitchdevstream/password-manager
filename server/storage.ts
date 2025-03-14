@@ -55,7 +55,7 @@ export class DatabaseStorage implements IStorage {
       .limit(limit)
       .offset(offset);
 
-    const [{ count }] = await db.select({
+    const [{ count }]: [{ count: number }] = await db.select({
       count: sql`count(*)::int`,
     })
     .from(passwords)
