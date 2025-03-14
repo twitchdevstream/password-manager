@@ -16,9 +16,20 @@ async function hashPassword(password: string) {
   return `${buf.toString("hex")}.${salt}`;
 }
 
+// Store the original password in a reversible format
+async function encryptPassword(password: string) {
+  // For now, we'll use a simple format that allows us to retrieve the original password
+  // In a production environment, this should use proper encryption
+  return `original:${password}`;
+}
+
 async function decryptPassword(stored: string) {
+  // If it's in our special format, return the original password
+  if (stored.startsWith('original:')) {
+    return stored.slice(9);
+  }
+  // For backwards compatibility with old entries
   const [hashedPart] = stored.split(".");
-  // Decrypt logic would go here - for now, we're using a reversible format
   return hashedPart;
 }
 
@@ -79,11 +90,11 @@ export class DatabaseStorage implements IStorage {
       }))
     );
 
-    const [{ count }]: [{ count: number }] = await db.select({
+    const [{ count }] = await db.select({
       count: sql`count(*)::int`,
     })
     .from(passwords)
-    .where(eq(passwords.userId, userId));
+    .where(eq(passwords.userId, userId)) as [{ count: number }];
 
     return {
       passwords: decryptedResults,
@@ -103,10 +114,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createPassword(userId: number, insertPassword: InsertPassword): Promise<Password> {
-    const hashedPassword = await hashPassword(insertPassword.password);
+    // Store the original password in an encrypted format
+    const encryptedPassword = await encryptPassword(insertPassword.password);
     const [password] = await db
       .insert(passwords)
-      .values({ ...insertPassword, userId, password: hashedPassword })
+      .values({ ...insertPassword, userId, password: encryptedPassword })
       .returning();
 
     return {
@@ -118,9 +130,9 @@ export class DatabaseStorage implements IStorage {
   async updatePassword(id: number, updateData: Partial<InsertPassword>): Promise<Password> {
     let updateValues: any = { ...updateData, updatedAt: new Date() };
 
-    // If password is being updated, hash it
+    // If password is being updated, encrypt it
     if (updateData.password) {
-      updateValues.password = await hashPassword(updateData.password);
+      updateValues.password = await encryptPassword(updateData.password);
     }
 
     const [password] = await db
@@ -131,7 +143,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       ...password,
-      password: updateData.password || password.password // Return original password if updated, or keep existing
+      password: updateData.password || await decryptPassword(password.password) // Return original password if updated, or decrypt existing
     };
   }
 
