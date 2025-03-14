@@ -1,0 +1,78 @@
+2025-03-14 18:05:50 
+2025-03-14 18:05:50 file:///app/node_modules/@neondatabase/serverless/index.mjs:1345
+2025-03-14 18:05:50 o?t(o):n(u)},"cb"),s=new r(function(o,u){n=o,t=u}).catch(o=>{throw Error.captureStackTrace(
+2025-03-14 18:05:50                                                                          ^
+2025-03-14 18:05:50 ErrorEvent {
+2025-03-14 18:05:50   [Symbol(kTarget)]: WebSocket {
+2025-03-14 18:05:50     _events: [Object: null prototype] {
+2025-03-14 18:05:50       error: [Function: onError] {
+2025-03-14 18:05:50         [Symbol(kIsForOnEventAttribute)]: false,
+2025-03-14 18:05:50         [Symbol(kListener)]: [Function (anonymous)]
+2025-03-14 18:05:50       },
+2025-03-14 18:05:50       message: [Function: onMessage] {
+2025-03-14 18:05:50         [Symbol(kIsForOnEventAttribute)]: false,
+2025-03-14 18:05:50         [Symbol(kListener)]: [Function (anonymous)]
+2025-03-14 18:05:50       },
+2025-03-14 18:05:50       close: [Function: onClose] {
+2025-03-14 18:05:50         [Symbol(kIsForOnEventAttribute)]: false,
+2025-03-14 18:05:50         [Symbol(kListener)]: [Function (anonymous)]
+2025-03-14 18:05:50       },
+2025-03-14 18:05:50       open: [Function: onOpen] {
+2025-03-14 18:05:50         [Symbol(kIsForOnEventAttribute)]: false,
+2025-03-14 18:05:50         [Symbol(kListener)]: [Function: handleWebSocketOpen]
+2025-03-14 18:05:50       }
+2025-03-14 18:05:50     },
+2025-03-14 18:05:50     _eventsCount: 4,
+2025-03-14 18:05:50     _maxListeners: undefined,
+2025-03-14 18:05:50     _binaryType: 'arraybuffer',
+2025-03-14 18:05:50     _closeCode: 1006,
+2025-03-14 18:05:50     _closeFrameReceived: false,
+2025-03-14 18:05:50     _closeFrameSent: false,
+2025-03-14 18:05:50     _closeMessage: Buffer(0) [Uint8Array] [],
+2025-03-14 18:05:50     _closeTimer: null,
+2025-03-14 18:05:50     _errorEmitted: true,
+2025-03-14 18:05:50     _extensions: {},
+2025-03-14 18:05:50     _paused: false,
+2025-03-14 18:05:50     _protocol: '',
+2025-03-14 18:05:50     _readyState: 3,
+2025-03-14 18:05:50     _receiver: null,
+2025-03-14 18:05:50     _sender: null,
+2025-03-14 18:05:50     _socket: null,
+2025-03-14 18:05:50     _bufferedAmount: 0,
+2025-03-14 18:05:50     _isServer: false,
+2025-03-14 18:05:50     _redirects: 0,
+2025-03-14 18:05:50     _autoPong: true,
+2025-03-14 18:05:50     _url: 'wss://db/v2',
+2025-03-14 18:05:50     _req: null,
+2025-03-14 18:05:50     [Symbol(shapeMode)]: false,
+2025-03-14 18:05:50     [Symbol(kCapture)]: false
+2025-03-14 18:05:50   },
+2025-03-14 18:05:50   [Symbol(kType)]: 'error',
+2025-03-14 18:05:50   [Symbol(kError)]: Error: connect ECONNREFUSED 172.18.0.2:443
+2025-03-14 18:05:50       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+2025-03-14 18:05:50     errno: -111,
+2025-03-14 18:05:50     code: 'ECONNREFUSED',
+2025-03-14 18:05:50     syscall: 'connect',
+2025-03-14 18:05:50     address: '172.18.0.2',
+2025-03-14 18:05:50     port: 443
+2025-03-14 18:05:50   },
+2025-03-14 18:05:50   [Symbol(kMessage)]: 'connect ECONNREFUSED 172.18.0.2:443'
+2025-03-14 18:05:50 }
+2025-03-14 18:05:50 
+2025-03-14 18:05:50 Node.js v20.19.0
+2025-03-14 18:05:51 Postgres is up - executing command
+2025-03-14 18:05:51 
+2025-03-14 18:05:51 > rest-express@1.0.0 db:push
+2025-03-14 18:05:51 > drizzle-kit push
+2025-03-14 18:05:51 
+2025-03-14 18:05:51 No config path provided, using default 'drizzle.config.ts'
+2025-03-14 18:05:51 Reading config file '/app/drizzle.config.ts'
+2025-03-14 18:05:51 Using 'pg' driver for database querying
+2025-03-14 18:05:51 [⣷] Pulling schema from database...
+[✓] Pulling schema from database...
+2025-03-14 18:05:51 [i] No changes detected
+2025-03-14 18:05:51 
+2025-03-14 18:05:51 > rest-express@1.0.0 start
+2025-03-14 18:05:51 > NODE_ENV=production node dist/index.js
+2025-03-14 18:05:51 
+2025-03-14 18:05:51 5:05:51 PM [express] serving on port 5000
