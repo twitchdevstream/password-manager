@@ -31,7 +31,7 @@ export const insertPasswordSchema = createInsertSchema(passwords)
   .extend({
     name: z.string().min(1, "Name is required"),
     username: z.string().min(1, "Username is required"), 
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string(), 
   });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
