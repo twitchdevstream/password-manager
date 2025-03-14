@@ -4,3 +4,11 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.env
+.env.*
+*.log
+npm-debug.log*
+build/
+coverage/
+.idea/
+.vscode/
